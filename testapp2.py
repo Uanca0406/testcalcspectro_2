@@ -76,6 +76,8 @@ sample_results = []
 st.markdown("#### Hasil Perhitungan Konsentrasi:")
 cols = st.columns(min(6, num_samples))
 
+
+
 for i in range(num_samples):
     with cols[i % 6]:
         abs_val_str = st.text_input(f"Absorbansi S{i+1}", key=f"s{i}")
@@ -90,16 +92,14 @@ for i in range(num_samples):
             "Sampel": f"S{i+1}",
             "Absorbansi": f"{abs_val:.4f}",
             "Konsentrasi (ppm)": f"{conc_val:.3f}",
-        mean_values_clean = [v for v in mean_values if not np.isnan(v)]
-        if mean_values_clean:
-            avg_kons sample = np.mean(mean_values_clean)
-            st.markdown(f"📌 Rata-rata Kons sample: {avg_cv_horwitz:.2f}%")
+            "Selisih dengan Rata2": ""
         })
 
 # Tampilkan tabel hasil
 if sample_results:
     st.markdown("#### 📋 Tabel Hasil:")
     st.table(pd.DataFrame(sample_results))
+    st.markdown(f"📌 Rata-rata: ")
 
     # CV Horwitz
     st.markdown("#### 📉 Evaluasi Presisi (CV Horwitz)")
