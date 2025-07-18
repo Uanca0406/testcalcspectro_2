@@ -108,13 +108,13 @@ for i in range(num_samples):
         })
 
 rsd = math.sqrt(np.mean(selisih_values))
-st.markdown(f"%RSD = {rsd}")
 
 # Tampilkan tabel hasil
 if sample_results:
     st.markdown("#### 📋 Tabel Hasil:")
     st.table(pd.DataFrame(sample_results))
     st.markdown(f"📌 Rata-rata: {avg_conc_values:.2f}")
+    st.markdown(f"📌 %RSD = {rsd:.2f}")
 
     # CV Horwitz
     st.markdown("#### 📉 Evaluasi Presisi (CV Horwitz)")
