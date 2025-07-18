@@ -77,6 +77,7 @@ st.markdown("#### Hasil Perhitungan Konsentrasi:")
 cols = st.columns(min(6, num_samples))
 
 conc_values = []
+abs_values = []
 for i in range(num_samples):
     with cols[i % 6]:
         abs_val_str = st.text_input(f"Absorbansi S{i+1}", key=f"s{i}")
@@ -84,12 +85,23 @@ for i in range(num_samples):
             abs_val = float(abs_val_str)
         except:
             abs_val = 0.0
+        abs_values.append(abs_val)
         conc_val = (abs_val - intercept) / slope if slope != 0 else 0
         conc_val = max(conc_val, 0)
         st.metric(label=f"Konsentrasi S{i+1}", value=f"{conc_val:.3f} ppm")
         conc_values.append(conc_val)
 
 avg_conc_values = np.mean(conc_values)
+
+for i in range(num_samples):
+        selisih = conc_values[i] - avg_conc_values
+        sample_results.append({
+            "Sampel": f"S{i+1}",
+            "Absorbansi": f"{abs_values[i]:.4f}",
+            "Konsentrasi (ppm)": f"{conc_values[i]:.3f}",
+            "Selisih dengan Rata2": f"{selisih:.3f}"
+        })
+
 
 # Tampilkan tabel hasil
 if sample_results:
