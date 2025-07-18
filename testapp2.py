@@ -96,7 +96,7 @@ avg_conc_values = np.mean(conc_values)
 
 selisih_values = []
 for i in range(num_samples):
-        selisih = conc_values[i] - avg_conc_values
+        selisih = math.fabs(conc_values[i] - avg_conc_values)
         rpd = selisih/avg_conc_values*100
         selisih_values.append(selisih*selisih)
         sample_results.append({
