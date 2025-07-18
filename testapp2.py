@@ -89,7 +89,7 @@ for i in range(num_samples):
         sample_results.append({
             "Sampel": f"S{i+1}",
             "Absorbansi": f"{abs_val:.4f}",
-            "Konsentrasi (ppm)": f"{conc_val:.3f}"
+            "Konsentrasi (ppm)": f"{conc_val:.3f}",
         mean_values_clean = [v for v in mean_values if not np.isnan(v)]
         if mean_values_clean:
             avg_kons sample = np.mean(mean_values_clean)
