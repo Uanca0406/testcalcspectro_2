@@ -2,86 +2,123 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+from scipy.stats import linregress
 
-# Function for calculating the regression line
-def regression_analysis(x, y):
-    model = LinearRegression()
-    model.fit(x.reshape(-1, 1), y)
-    slope = model.coef_[0]
-    intercept = model.intercept_
-    r_squared = model.score(x.reshape(-1, 1), y)
-    return slope, intercept, r_squared
+st.set_page_config(page_title="Spektrofotometri Sederhana", layout="wide")
+st.title("📊 Analisis Spektrofotometri - Beer's Law")
 
-# Function for calculating RPD
-def calculate_rpd(actual, predicted):
-    return np.abs(actual - predicted) / actual * 100
+st.markdown("Masukkan minimal 3 data standar (konsentrasi dan absorbansi):")
 
-# Function to calculate accuracy
-def calculate_accuracy(actual, predicted):
-    return np.abs((actual - predicted) / actual) * 100
+# Input data standar
+num_std = st.number_input("Jumlah data standar", min_value=3, max_value=20, value=6)
+std_data = []
 
-# Webpage title
-st.title("Spektrofotometri Calculator")
+for i in range(num_std):
+    col1, col2 = st.columns(2)
+    with col1:
+        conc = st.text_input(f"Konsentrasi {i+1} (ppm)", key=f"c{i}")
+    with col2:
+        absb = st.text_input(f"Absorbansi {i+1}", key=f"a{i}")
+    try:
+        conc = float(conc)
+        absb = float(absb)
+        std_data.append((conc, absb))
+    except:
+        pass
 
-# Input for sample data
-st.header("Masukkan Data Sampel dan Absorbansi")
+df = pd.DataFrame(std_data, columns=["Konsentrasi", "Absorbansi"])
 
-# Upload sample data
-sample_data = st.file_uploader("Upload file CSV dengan kolom 'gram' dan 'absorbansi' (tanpa header)", type="csv")
+# Validasi input
+if df.shape[0] < num_std:
+    st.warning("Isi semua nilai terlebih dahulu dengan format angka yang benar.")
+    st.stop()
 
-if sample_data is not None:
-    # Read CSV file
-    df = pd.read_csv(sample_data, header=None, names=['gram', 'absorbansi'])
+if df["Konsentrasi"].nunique() < 2:
+    st.error("Minimal dua nilai konsentrasi harus berbeda untuk menghitung regresi linier.")
+    st.stop()
 
-    # Display the sample data
-    st.write("Data Sampel:")
-    st.dataframe(df)
+# Hitung regresi linier
+slope, intercept, r_value, _, _ = linregress(df["Konsentrasi"], df["Absorbansi"])
+r_squared = r_value**2
 
-    # Input untuk persamaan kurva kalibrasi (y = mx + b)
-    st.header("Masukkan Persamaan Kurva Kalibrasi")
+if abs(slope) < 1e-6:
+    st.error("Slope terlalu kecil. Data mungkin tidak cukup bervariasi atau tidak linier.")
+    st.stop()
 
-    intercept_input = st.number_input("Intercept (b)", value=0.0)
-    slope_input = st.number_input("Slope (m)", value=1.0)
+# Plot kurva kalibrasi
+fig, ax = plt.subplots()
+x_fit = np.linspace(0, df["Konsentrasi"].max() * 1.1, 100)
+y_fit = slope * x_fit + intercept
 
-    # Calculate concentration based on absorbance
-    df['konsentrasi'] = (df['absorbansi'] - intercept_input) / slope_input
-    st.write("Konsentrasi Sampel:")
-    st.dataframe(df)
+ax.scatter(df["Konsentrasi"], df["Absorbansi"], label="Data Standar", color="blue")
+ax.plot(x_fit, y_fit, color="red", linestyle="--", label=f"y = {slope:.3f}x + {intercept:.3f}")
+ax.set_xlabel("Konsentrasi (ppm)")
+ax.set_ylabel("Absorbansi")
+ax.set_title("Kurva Kalibrasi")
+ax.grid(True)
+ax.legend()
 
-    # Calculate regression parameters using the data
-    x = np.array(df['gram']).reshape(-1, 1)
-    y = np.array(df['absorbansi'])
-    
-    slope, intercept, r_squared = regression_analysis(x, y)
+st.pyplot(fig)
 
-    # Display regression results
-    st.subheader("Hasil Regresi Linear")
-    st.write(f"Slope: {slope:.4f}")
-    st.write(f"Intercept: {intercept:.4f}")
-    st.write(f"R² (Koefisien Determinasi): {r_squared:.4f}")
+# Tampilkan parameter regresi
+st.markdown("### 📌 Parameter Regresi")
+st.write(f"- Slope (ε·l): {slope:.4f}")
+st.write(f"- Intersep: {intercept:.4f}")
+st.write(f"- Koefisien Korelasi (r): {r_value:.4f}")
+st.write(f"- R-squared: {r_squared:.4f}")
 
-    # Calculate RPD for each sample
-    predicted_absorbance = slope * df['gram'] + intercept
-    df['RPD'] = calculate_rpd(df['absorbansi'], predicted_absorbance)
-    st.write("RPD Sampel:")
-    st.dataframe(df)
+# Input sampel
+st.markdown("---")
+st.markdown("### 🧪 Hitung Konsentrasi Sampel")
+num_samples = st.number_input("Jumlah sampel", min_value=1, max_value=10, value=6)
 
-    # Calculate accuracy
-    df['Akurasi'] = calculate_accuracy(df['absorbansi'], predicted_absorbance)
-    st.write("Akurasi Sampel:")
-    st.dataframe(df)
+sample_results = []
+st.markdown("#### Hasil Perhitungan Konsentrasi:")
+cols = st.columns(min(6, num_samples))
 
-    # Plot the calibration curve and regression line
-    fig, ax = plt.subplots()
-    ax.scatter(df['gram'], df['absorbansi'], color='blue', label='Data Sampel')
-    ax.plot(df['gram'], predicted_absorbance, color='red', label=f'Regresi: y = {slope:.4f}x + {intercept:.4f}')
-    ax.set_xlabel('Gram Sampel')
-    ax.set_ylabel('Absorbansi')
-    ax.legend()
+for i in range(num_samples):
+    with cols[i % 6]:
+        abs_val_str = st.text_input(f"Absorbansi S{i+1}", key=f"s{i}")
+        try:
+            abs_val = float(abs_val_str)
+        except:
+            abs_val = 0.0
+        conc_val = (abs_val - intercept) / slope if slope != 0 else 0
+        conc_val = max(conc_val, 0)
+        st.metric(label=f"Konsentrasi S{i+1}", value=f"{conc_val:.3f} ppm")
+        sample_results.append({
+            "Sampel": f"S{i+1}",
+            "Absorbansi": f"{abs_val:.4f}",
+            "Konsentrasi (ppm)": f"{conc_val:.3f}"
+        })
 
-    st.pyplot(fig)
+# Tampilkan tabel hasil
+if sample_results:
+    st.markdown("#### 📋 Tabel Hasil:")
+    st.table(pd.DataFrame(sample_results))
 
-else:
-    st.warning("Harap unggah file CSV untuk melanjutkan perhitungan.")
+    # CV Horwitz
+    st.markdown("#### 📉 Evaluasi Presisi (CV Horwitz)")
+    horwitz_results = []
+    horwitz_values = []
 
+    for s in sample_results:
+        ppm = float(s["Konsentrasi (ppm)"])
+        C_decimal = ppm / 1000000
+        if C_decimal > 0:
+            cv_horwitz = 2 ** (1 - 0.5 * np.log10(C_decimal))
+            horwitz_values.append(cv_horwitz)
+        else:
+            cv_horwitz = np.nan
+        horwitz_results.append({
+            "Sampel": s["Sampel"],
+            "Konsentrasi (ppm)": f"{ppm:.3f}",
+            "CV Horwitz (%)": f"{cv_horwitz:.2f}" if not np.isnan(cv_horwitz) else "NaN"
+        })
+
+    st.table(pd.DataFrame(horwitz_results))
+
+    horwitz_values_clean = [v for v in horwitz_values if not np.isnan(v)]
+    if horwitz_values_clean:
+        avg_cv_horwitz = np.mean(horwitz_values_clean)
+        st.markdown(f"📌 Rata-rata CV Horwitz: {avg_cv_horwitz:.2f}%")
