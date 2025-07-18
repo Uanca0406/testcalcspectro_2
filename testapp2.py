@@ -90,6 +90,10 @@ for i in range(num_samples):
             "Sampel": f"S{i+1}",
             "Absorbansi": f"{abs_val:.4f}",
             "Konsentrasi (ppm)": f"{conc_val:.3f}"
+        horwitz_values_clean = [v for v in horwitz_values if not np.isnan(v)]
+        if horwitz_values_clean:
+            avg_kons sample = np.mean(horwitz_values_clean)
+            st.markdown(f"📌 Rata-rata Kons sample: {avg_cv_horwitz:.2f}%")
         })
 
 # Tampilkan tabel hasil
