@@ -106,7 +106,7 @@ for i in range(num_samples):
             "Sampel": f"S{i+1}",
             "Absorbansi": f"{abs_val:.4f}",
             "Konsentrasi (ppm)": f"{conc_val:.3f}",
-            "Selisih dengan Rata2": f"{selisih:.3f}
+            "Selisih dengan Rata2": f"{selisih:.3f}"
         })
 
 
