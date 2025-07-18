@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from scipy.stats import linregress
 
 st.set_page_config(page_title="Spektrofotometri Sederhana", layout="wide")
@@ -93,15 +94,21 @@ for i in range(num_samples):
 
 avg_conc_values = np.mean(conc_values)
 
+selisih_values = []
 for i in range(num_samples):
         selisih = conc_values[i] - avg_conc_values
+        rpd = selisih/avg_conc_values*100
+        selisih_values.append(selisih*selisih)
         sample_results.append({
             "Sampel": f"S{i+1}",
             "Absorbansi": f"{abs_values[i]:.4f}",
             "Konsentrasi (ppm)": f"{conc_values[i]:.3f}",
-            "Selisih dengan Rata2": f"{selisih:.3f}"
+            "Selisih dengan Rata2": f"{selisih:.3f}",
+            "RPD": f"{rpd:.3f}%"
         })
 
+rsd = math.sqrt(np.mean(selisih_values))
+st.markdown(f"%RSD = )
 
 # Tampilkan tabel hasil
 if sample_results:
