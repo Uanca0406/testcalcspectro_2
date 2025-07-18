@@ -108,7 +108,7 @@ for i in range(num_samples):
         })
 
 rsd = math.sqrt(np.mean(selisih_values))
-st.markdown(f"%RSD = )
+st.markdown(f"%RSD = {rsd}")
 
 # Tampilkan tabel hasil
 if sample_results:
