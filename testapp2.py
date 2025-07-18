@@ -81,7 +81,7 @@ for i in range(num_samples):
     with cols[i % 6]:
         abs_val_str = st.text_input(f"Absorbansi S{i+1}", key=f"s{i}")
         try:
-            abs_val = float(abs_val_str1)
+            abs_val = float(abs_val_str)
         except:
             abs_val = 0.0
         conc_val = (abs_val - intercept) / slope if slope != 0 else 0
